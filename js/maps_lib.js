@@ -99,6 +99,7 @@
         self.fusionTable = self.searchrecords;
         self.searchrecords.setMap(map);
         self.getCount(whereClause);
+        self.getList(whereClause);
     };
 
 
@@ -163,6 +164,17 @@
         self.whereClause = self.locationColumn + " not equal to ''";
         
         //-----custom filters-----
+            var type_column = "'Number'";
+            var searchType = type_column + " IN (-1,";
+            if ( $("#cbType1").is(':checked')) searchType += "1,";
+            if ( $("#cbType2").is(':checked')) searchType += "2,";
+            if ( $("#cbType3").is(':checked')) searchType += "3,";
+            self.whereClause += " AND " + searchType.slice(0, searchType.length - 1) + ")";
+
+            var text_search = $("#text_search").val().replace("'", "\\'");
+            if (text_search != '')
+            self.whereClause += " AND 'Name' contains ignoring case '" + text_search + "'";
+
         //-----end of custom filters-----
 
         self.getgeoCondition(address, function (geoCondition) {
@@ -298,6 +310,47 @@
         });
         $("#result_box").fadeIn();
     };
+
+     MapsLib.prototype.getList = function(whereClause) {
+    var self = this;
+    var selectColumns = 'Name, Location ';
+
+    self.query({ 
+      select: selectColumns, 
+      where: whereClause 
+    }, function(response) { 
+      self.displayList(response);
+    });
+  },
+
+  MapsLib.prototype.displayList = function(json) {
+    var self = this;
+
+    var data = json['rows'];
+    var template = '';
+
+    var results = $('#results_list');
+    results.hide().empty(); //hide the existing list and empty it out first
+
+    if (data == null) {
+      //clear results list
+      results.append("<span class='lead'>No results found</span>");
+    }
+    else {
+      for (var row in data) {
+        template = "\
+          <div class='row-fluid item-list'>\
+            <div class='span12'>\
+              <strong>" + data[row][0] + "</strong>\
+              <br />\
+              " + data[row][1] + "\
+            </div>\
+          </div>";
+        results.append(template);
+      }
+    }
+    results.fadeIn();
+  },
 
     MapsLib.prototype.addCommas = function (nStr) {
         nStr += '';

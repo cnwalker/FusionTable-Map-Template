@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang='en'>
   <head>
-    <title>Searchable Map Template Demo</title>
+    <title>Test Searchable Map</title>
     <meta charset='utf-8' />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta content='' name='description' />
@@ -13,6 +13,10 @@
     <!--[if lt IE 9]>
       <script type="text/javascript" src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
+
+    <script src="http://maps.googleapis.com/maps/api/js"></script>
+    <script src="overlappingMarkerSpiderfier.js"></script>
+
   </head>
   <body>
     <div class='navbar navbar-default navbar-static-top'>
@@ -23,7 +27,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class='navbar-brand' href='index.html'>Searchable Map Template</a>
+          <a class='navbar-brand' href='index.html'>Test Searchable Map</a>
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
@@ -36,7 +40,6 @@
     <div class='container-fluid'>
       <div class='row'>
         <div class='col-md-4'>
-          <p>This is a demo of <a href='http://derekeder.com'>Derek Eder's</a> <a href='http://derekeder.com/searchable_map_template/'>Searchable Map Template</a> using Google <a href='http://support.google.com/fusiontables/answer/2571232?hl=en&ref_topic=1652595'>Fusion Tables</a>. Use this section to give a little context to your map.</p>
           <div class='well'>
             <h4>
               Address <small>(<a id='find_me' href='#'>find me</a>)</small>
@@ -57,10 +60,46 @@
             </p>
 
             <br />
-            <h4>Custom filters and views</h4>
+
+            <h4>
+              Search
+            </h4>
+            <input class='form-control' id='text_search' 
+            placeholder="Enter a keyword or phrase" type='text' />
+
+            <br />
+
+            <h4>
+              Categories
+            </h4>
+            <ul class='inputs-list unstyled'>
+              <li>
+                <label class='checkbox inline'>
+                  <input type='checkbox' id='cbType1' />
+                  <span class='filter-box filter-red'></span>
+                  Home
+                </label>
+              </li>
+              <li>
+                <label class='checkbox inline'>
+                  <input type='checkbox' id='cbType2' />
+                  <span class='filter-box filter-yellow'></span>
+                  School
+                </label>
+              </li>
+              <li>
+                <label class='checkbox inline'>
+                  <input type='checkbox' id='cbType3' />
+                  <span class='filter-box filter-blue'></span>
+                  Temple
+                </label>
+              </li>
+            </ul>
+
+<!--             <h4>Custom filters and views</h4>
             <p>Take a look at the <a href='https://github.com/derekeder/FusionTable-Map-Template/wiki/Filter-examples'>wiki</a> to see how to add your own custom filters and views like:</p>
             <div class='row'>
-              <div class='col-md-6'>
+              <div class='col-md-4'>
                 <ul>
                   <li><a href='https://github.com/derekeder/FusionTable-Map-Template/wiki/Filter-examples#wiki-checkboxes'>Checkboxes</a></li>
                   <li><a href='https://github.com/derekeder/FusionTable-Map-Template/wiki/Filter-examples#wiki-radiobuttons'>Radio buttons</a></li>
@@ -68,14 +107,15 @@
                   <li><a href='https://github.com/derekeder/FusionTable-Map-Template/wiki/Filter-examples#wiki-textsearches'>Text searches</a></li>
                 </ul>
               </div>
-              <div class='col-md-6'>
+              <div class='col-md-4'>
                 <ul>
                   <li><a href='https://github.com/derekeder/FusionTable-Map-Template/wiki/Filter-examples#wiki-sliders'>Sliders</a></li>
                   <li><a href='https://github.com/derekeder/FusionTable-Map-Template/wiki/Filter-examples#wiki-date-sliders'>Date sliders</a></li>
                   <li><a href='https://github.com/derekeder/FusionTable-Map-Template/wiki/List-search-results'>Results lists</a></li>
                 </ul>
               </div>
-            </div>
+            </div> -->
+
             <br />
             <a class='btn btn-primary' id='search' href='#'>
               <i class='glyphicon glyphicon-search'></i>
@@ -87,8 +127,13 @@
             </a>
           </div>
           <div class='alert alert-info' id='result_box' ><strong id='result_count'></strong></div>
+
+          <p class='pull-left'>
+            <a href='http://derekeder.com/searchable_map_template/'>Searchable Map Template</a> by <a href='http://derekeder.com'>Derek Eder</a>.
+          </p>
+
         </div>
-        <div class='col-md-8'>
+        <div class='col-md-4'>
           <noscript>
             <div class='alert alert-info'>
               <h4>Your JavaScript is disabled</h4>
@@ -96,10 +141,18 @@
             </div>
           </noscript>
           <div id='map_canvas'></div>
-          <p class='pull-right'>
-            <a href='http://derekeder.com/searchable_map_template/'>Searchable Map Template</a> by <a href='http://derekeder.com'>Derek Eder</a>.
-        </p>
         </div>
+
+        <div class='col-md-4'>
+          <div class='well'>
+            <!-- <table class="table"> -->
+            <!-- </table>       -->
+
+            <div id='results_list'></div>
+              
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -119,11 +172,11 @@
         
         $(function() {
           var myMap = new MapsLib({
-            fusionTableId:      "1m4Ez9xyTGfY2CU6O-UgEcPzlS0rnzLU93e4Faa0",
-            googleApiKey:       "AIzaSyA3FQFrNr5W2OEVmuENqhb2MBB2JabdaOY",
-            locationColumn:     "geometry",
-            map_center:         [41.8781136, -87.66677856445312],
-            locationScope:      "chicago"
+            fusionTableId:      "1y_dkjO0yf5yxQxaqdk8hIG5YVcECC8Vg-TVzf-Bz",
+            googleApiKey:       "AIzaSyAF7Syz8InHGYWi_zRABKqmle_6FGzIN40",
+            locationColumn:     "Location",
+            map_center:         [42.340356,-71.214457],
+            locationScope:      "west newton"
           });
 
           var autocomplete = new google.maps.places.Autocomplete(document.getElementById('search_address'));
@@ -161,6 +214,33 @@
                   return false;
               }
           });
+
+          // add stuff for spiderfier here???
+          // var oms = new OverlappingMarkerSpiderfier(map);
+
+          // var iw = new gm.InfoWindow();
+          // oms.addListener('click', function(marker, event) {
+          //   iw.setContent(marker.desc);
+          //   iw.open(map, marker);
+          // });
+
+          // oms.addListener('spiderfy', function(markers) {
+          //   iw.close();
+          // });
+
+          // for (var i = 0; i < window.mapData.length; i ++) {
+          //   var datum = window.mapData[i];
+          //   var loc = new gm.LatLng(datum.lat, datum.lon);
+          //   var marker = new gm.Marker({
+          //     position: loc,
+          //     title: datum.h,
+          //     map: map
+          //   });
+          //   marker.desc = datum.d;
+          //   oms.addMarker(marker);  // <-- here
+          // }
+
+
         });
       //]]>
     </script>
